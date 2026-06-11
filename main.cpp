@@ -110,27 +110,33 @@ class Jogador : public Pessoas{
         void pedirNamoro(NPC* npc){
             if (npc->getNamorando() == true){
                 cout << "\nVocê já está namorando!!\n";
+                sleep_seconds(1);
                 return;
             }
             if (npc->getCoracao() < 50){
                 cout << "\nVocês ainda não são chegados o suficiente!\n";
+                sleep_seconds(1);
                 return;
             }
             cout << "\nParabens!! Agora vocês estão namorando!!\n";
             npc->setRelacionamento(true, false);
+            sleep_seconds(1);
         }
 
         void pedirCasamento(NPC* npc){
             if (npc->getCasado() == true){
                 cout << "\nVocê já está casado!!\n";
+                sleep_seconds(1);
                 return;
             }
             if (npc->getCoracao() < 100){
                 cout << "\nVocês ainda não são chegados o suficiente!\n";
+                sleep_seconds(1);
                 return;
             }
             if (npc->getNamorando() == false){
                 cout << "\nVocês ainda não estão namorando!\n";
+                sleep_seconds(1);
                 return; // faltava esse return!
             }
             cout << "\nParabens!! Agora vocês estão casados!!\n";
@@ -155,12 +161,12 @@ class Jogador : public Pessoas{
 
             cout << "Você presenteou " << npc->getName() << " com " << inventario[itemIdx] << "!\n";
             if (inventario[itemIdx] == npc->getfavPresent()){
-                npc->flertar("presente", 1);
+                npc->flertar("presente", 25);
                 cout << "\033[32m";
                 cout << "Bonus de +1 pois esse é o predente favorito de " << npc->getName() << endl;
                 cout << "\033[0m";
                 }else{
-                    npc->flertar("presente", 0.5);
+                    npc->flertar("presente", 6);
                 }
             inventario.erase(inventario.begin() + itemIdx);
         }
@@ -292,6 +298,7 @@ int main(){
                             
                             player->setMoney(loja.getPreco(v));
                             player->addItem(loja.getPresente(v));
+                            sleep_seconds(1.5);
                         } catch (runtime_error& e) {
                             cout << "\nErro: " << e.what() << "\n";
                             sleep_seconds(1.5);
@@ -321,7 +328,7 @@ int main(){
                         cin >> tipoFlerte;
 
                         if (tipoFlerte == 1){
-                            npcs[flerte]->flertar("Contar Piada", 0.5);
+                            npcs[flerte]->flertar("Contar Piada", 12);
                             npcs[flerte]->exibirInformacoes(flerte);
                             sleep_seconds(0.1);
                         } else if (tipoFlerte == 2){
