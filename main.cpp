@@ -76,7 +76,7 @@ class NPC : public Pessoas{
             return casado;
         }
 
-        bool setRelacionamento(bool namoro, bool casando){
+        void setRelacionamento(bool namoro, bool casando){
             namorando = namoro;
             casado = casando;
         }
@@ -163,7 +163,6 @@ class Jogador : public Pessoas{
                     npc->flertar("presente", 0.5);
                 }
             inventario.erase(inventario.begin() + itemIdx);
-            // aqui você também pode chamar npc->receberPresente(item) futuramente
         }
 
         void seeItems(){
@@ -282,20 +281,24 @@ int main(){
                 int v;
                 do{
                     system("cls");
-                    cout << "\n---------------------- LOJA ----------------------\n";
                     Presentes loja;
                     loja.getItens();
                     cout << "99. Sair da loja\nEscolha: ";
                     cin >> v;
                     if (v != 99){
-                        player->setMoney(loja.getPreco(v));
-                        cout << "O Item " << loja.getPresente(v) << " foi comprador por " << loja.getPreco(v) << "R$\n";
-                        cout << "Seu saldo agora é " << player->getMoney();
-                        player->addItem(loja.getPresente(v));
-                        sleep_seconds(2);
+                        try {
+                            if (v < 0 || v > 11)
+                                throw runtime_error("Item inexistente na loja!");
+                            
+                            player->setMoney(loja.getPreco(v));
+                            player->addItem(loja.getPresente(v));
+                        } catch (runtime_error& e) {
+                            cout << "\nErro: " << e.what() << "\n";
+                            sleep_seconds(1.5);
+                        }
                     }
                 }while (v != 99);
-                break;
+                break;            
             case 3:
                 int tipoFlerte;
                 do{
@@ -307,29 +310,41 @@ int main(){
                     cout << "Com quem você deseja flertar: ";
                     cin >> flerte;
 
-                    cout << "1. Contar piada\n";
-                    cout << "2. Presentear\n";
-                    cout << "0. Sair\n";
-                    cin >> tipoFlerte;
+                    try {
+                        if (flerte < 0 || flerte >= npcs.size()){
+                            throw out_of_range("NPC não encontrado!");
+                        }
 
-                    if (tipoFlerte == 1){
-                        npcs[flerte]->flertar("Contar Piada", 0.5);
-                        npcs[flerte]->exibirInformacoes(flerte);
-                        sleep_seconds(0.1);
-                    } else if (tipoFlerte == 2){
-                        system("cls");
-                        int giveGift = 0;
-                        player->seeItems();
-                        cout << "\nEscolha que presente deseja dar: ";
-                        cin >> giveGift;
-                        player->Presentear(npcs[flerte], giveGift);
-                        npcs[flerte]->exibirInformacoes(flerte);
-                        sleep_seconds(2);
-                    }else{
-                        continue;
+                        cout << "1. Contar piada\n";
+                        cout << "2. Presentear\n";
+                        cout << "0. Sair\n";
+                        cin >> tipoFlerte;
+
+                        if (tipoFlerte == 1){
+                            npcs[flerte]->flertar("Contar Piada", 0.5);
+                            npcs[flerte]->exibirInformacoes(flerte);
+                            sleep_seconds(0.1);
+                        } else if (tipoFlerte == 2){
+                            system("cls");
+                            int giveGift = 0;
+                            player->seeItems();
+                            cout << "\nEscolha que presente deseja dar: ";
+                            cin >> giveGift;
+                            player->Presentear(npcs[flerte], giveGift);
+                            npcs[flerte]->exibirInformacoes(flerte);
+                            sleep_seconds(2);
+                        } else {
+                            continue;
+                        }
+
+                    } catch (out_of_range& e) {
+                        cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
+                        sleep_seconds(1.5);
+                        tipoFlerte = -1;
                     }
+
                 } while (tipoFlerte != 0);
-                break;
+                break;            
             case 4:
                 system("cls");
                 int indexNamoro;
@@ -406,7 +421,7 @@ int main(){
                             sleep_seconds(1.5);
                             break;
                         }
-                        case 2:
+                        case 2:{
                             system("cls");
                             int total = -1;
                             for (int i = 0; i < npcs.size(); i++){
@@ -427,6 +442,7 @@ int main(){
 
                             sleep_seconds(1.5);
                             break;
+                        }
                         case 3:
                             double money;
                             system("cls");
