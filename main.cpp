@@ -163,7 +163,7 @@ class Jogador : public Pessoas{
             if (inventario[itemIdx] == npc->getfavPresent()){
                 npc->flertar("presente", 25);
                 cout << "\033[32m";
-                cout << "Bonus de +1 pois esse é o predente favorito de " << npc->getName() << endl;
+                cout << "Bonus de +25 pois esse é o predente favorito de " << npc->getName() << endl;
                 cout << "\033[0m";
                 }else{
                     npc->flertar("presente", 6);
