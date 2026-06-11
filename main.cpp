@@ -70,23 +70,10 @@ class NPC : public Pessoas{
                 coracao += qtd;
             }
         }
-};
 
-void exibirNPCS(){
-    cout << "\n---------------------- SOLTEIROS ----------------------\n";
-    cout << "0. Maria - 19 Anos - Solteira " << endl;
-    cout << "1. Abigail - 21 Anos - Solteira " << endl;
-    cout << "2. Alex - 22 Anos - Solteiro " << endl;
-    cout << "3. Elliot - 31 Anos - Solteiro " << endl;
-    cout << "4. Emily - 28 Anos - Solteira " << endl;
-    cout << "5. Haley - 21 Anos - Solteira " << endl;
-    cout << "6. Harvey - 33 Anos - Solteiro "<< endl;
-    cout << "7. Leah - 27 Anos - Solteira " << endl;
-    cout << "8. Maru - 20 Anos - Solteira " << endl;
-    cout << "9. Penny - 23 Anos - Solteira " << endl;
-    cout << "10. Sam - 21 Anos - Solteiro " << endl;
-    cout << "11. Sebastian - 26 Anos - Solteiro " << endl;
-    cout << "12. Shane - 31 Anos - Solteiro " << endl;
+        void exibirInformacoes(int index){
+            cout << index << ". " << nome << " - " << idade << " Anos - " << "Nivel de Relacionamento: " << coracao << endl;
+        }
 };
 
 class Jogador : public Pessoas{
@@ -178,6 +165,7 @@ int main(){
         cout << "4. Pedir em namoro" << endl;
         cout << "5. Pedir em casamento" << endl;
         cout << "6. Verificar o inventário" << endl;
+        cout << "7. Exibir pretendentes" << endl;
         cout << "0. Sair" << endl;
 
         cout << "O que voce deseja fazer? "; 
@@ -234,21 +222,23 @@ int main(){
                     cout << "\n---------------------- LOJA ----------------------\n";
                     Presentes loja;
                     loja.getItens();
-                    cout << "-1. Sair da loja\nEscolha: ";
+                    cout << "99. Sair da loja\nEscolha: ";
                     cin >> v;
-                    if (v != 0){
+                    if (v != 99){
                         player->setMoney(loja.getPreco(v));
                         cout << "O Item " << loja.getPresente(v) << " foi comprador por " << loja.getPreco(v) << "R$\n";
                         cout << "Seu saldo agora é " << player->getMoney();
+                        player->addItem(loja.getPresente(v));
+                        sleep_seconds(2);
                     }
-                }while (v != -1);
+                }while (v != 99);
                 break;
             case 3:
-                int m;
+                int tipoFlerte;
                 do{
                     system("cls");
                     cout << "\033[31m";
-                    int flerte, tipoFlerte;
+                    int flerte;
                     cout << "\n---------------------- FLERTAR ----------------------\n";
                     cout << "\033[0m";
                     cout << "Com quem você deseja flertar: ";
@@ -256,14 +246,21 @@ int main(){
 
                     cout << "1. Contar piada\n";
                     cout << "2. Presentear\n";
+                    cout << "0. Sair\n";
                     cin >> tipoFlerte;
 
                     if (tipoFlerte == 1){
                         npcs[flerte]->flertar("Contar Piada", 0.5);
+                        npcs[flerte]->exibirInformacoes(flerte);
+                        sleep_seconds(0.1);
                     } else if (tipoFlerte == 2){
                         player->Presentear(npcs[flerte], 1);
+                        npcs[flerte]->exibirInformacoes(flerte);
+                        sleep_seconds(2);
+                    }else{
+                        continue;
                     }
-                } while (m != 0);
+                } while (tipoFlerte != 0);
                 break;
             case 4:
             
@@ -277,9 +274,22 @@ int main(){
                     system("cls");
                     cout << "\n---------------------- INVENTARIO ----------------------\n";
                     player->seeItems();
-                    cout << "\n1. Sair\n2. Continuar\n";
+                    cout << "\n0. Sair\n->";
                     cin >> s;
                 } while (s != 0);
+                break;
+            case 7:
+                int u;
+                do{
+                    system("cls");
+                    cout << "\n---------------------- SOLTEIROS ----------------------\n";
+                    for (int i = 0; i < npcs.size(); i++){
+                        npcs[i]->exibirInformacoes(i);
+                    }
+                    cout << "0 Para sair!\n->";
+                    cin >> u;
+                    cout << endl;
+                }while (u != 0);
                 break;
             case 0:
                 system("cls");
