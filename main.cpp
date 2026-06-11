@@ -4,14 +4,14 @@ using namespace std;
 #include <string>
 #include <ctime>
 
-void sleep_seconds(double seconds) {
+void sleep_seconds(double seconds) { //ctime
     clock_t start = clock(); // retorna o número de ticks do processador desde que o programa iniciou
     while ((clock() - start) / CLOCKS_PER_SEC < seconds); // CLOCKS_PER_SEC converte ticks para SEGUNDOS
 }  
 
 class Presentes{
     private:
-        vector<string> presente = {"Flores", "Chocolate", "Livro", "Cafe", "Pizza", "Videogame", "Joia", "Musica", "Planta", "Roupa", "Pelucia", "Perfume"};
+        vector<string> presente = {"Flores", "Chocolate", "Livro", "Cafe", "Pizza", "Videogame", "Joia", "Musica", "Planta", "Roupa", "Pelucia", "Perfume"}; // dinâmica
         vector<int> preco = {-30, -20, -72, -20, -80, -120, -280, -12, -6, -100, -26, -200};
     public:
         void getItens(){
@@ -99,7 +99,7 @@ class Jogador : public Pessoas{
         double dinheiro = 0;
     public:
         Jogador(string n, int i, int pre){
-            setInfo(n, i, 0); //voltar aqui
+            setInfo(n, i, 0);
         }
 
         void addItem(string item){
@@ -137,12 +137,11 @@ class Jogador : public Pessoas{
             if (npc->getNamorando() == false){
                 cout << "\nVocês ainda não estão namorando!\n";
                 sleep_seconds(1);
-                return; // faltava esse return!
+                return;
             }
             cout << "\nParabens!! Agora vocês estão casados!!\n";
             npc->setRelacionamento(true, true);
 
-            // Tela de fim de jogo
             sleep_seconds(1);
             system("cls");
             cout << "\033[33m";
@@ -151,7 +150,7 @@ class Jogador : public Pessoas{
             cout << "\nParabéns!! Você zerou o jogo!\n";
             cout << "O jogo fechará em 4 segundos...\n";
             sleep_seconds(4);
-            exit(0); // fecha o programa
+            exit(0);
         }
 
         void Presentear(NPC* npc, int itemIdx){
