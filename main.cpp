@@ -355,23 +355,40 @@ int main(){
             case 4:
                 system("cls");
                 int indexNamoro;
+                try{
+                    if (indexNamoro < 0 || indexNamoro > npcs.size()){
+                        throw out_of_range("NPC não encontrado!");
+                    }
                 for (int i = 0; i < npcs.size(); i++){
                     npcs[i]->exibirInformacoes(i);
                 }
                 cout << "Quem você deseja pedir em namoro?\n-> ";
                 cin >> indexNamoro;
                 player->pedirNamoro(npcs[indexNamoro]);
+            }catch (out_of_range& e) {
+                        cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
+                        sleep_seconds(1.5);
+                        tipoFlerte = -1;
+                    }
                 break;
             case 5:
                 system("cls");
                 int indexCasamento;
-                for (int i = 0; i < npcs.size(); i++){
-                    npcs[i]->exibirInformacoes(i);
-                }
-                cout << "Quem você deseja pedir em casamento?\n-> ";
-                cin >> indexCasamento;
-                player->pedirCasamento(npcs[indexCasamento]);
-                break;
+                try{
+                    if(indexCasamento < 0 || indexCasamento > npcs.size()){
+                        throw out_of_range("NPC não encontrado!");
+                    }
+                    for (int i = 0; i < npcs.size(); i++){
+                        npcs[i]->exibirInformacoes(i);
+                    }
+                    cout << "Quem você deseja pedir em casamento?\n-> ";
+                    cin >> indexCasamento;
+                    player->pedirCasamento(npcs[indexCasamento]);
+                }catch (out_of_range& e) {
+                        cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
+                        sleep_seconds(1.5);
+                        tipoFlerte = -1;
+                    }
                 break;
             case 6:
                 int s;
