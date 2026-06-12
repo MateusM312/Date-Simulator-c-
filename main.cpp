@@ -1,22 +1,38 @@
 using namespace std;
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 #include <ctime>
+#include <limits>
 
-void sleep_seconds(double seconds) { //ctime
+void sleep_seconds(double seconds) {
     clock_t start = clock(); // retorna o número de ticks do processador desde que o programa iniciou
     while ((clock() - start) / CLOCKS_PER_SEC < seconds); // CLOCKS_PER_SEC converte ticks para SEGUNDOS
 }  
 
+// Função para ler um inteiro com validação
+int lerInt(string mensagem){
+    int valor;
+    cout << mensagem;
+    cin >> valor;
+    while(cin.fail()){
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Entrada invalida! Digite um numero: ";
+        cin >> valor;
+    }
+    return valor;
+}
+
+//========================== CLASSE PRESENTES ===========================//
 class Presentes{
     private:
-        vector<string> presente = {"Flores", "Chocolate", "Livro", "Cafe", "Pizza", "Videogame", "Joia", "Musica", "Planta", "Roupa", "Pelucia", "Perfume"}; // dinâmica
+        vector<string> presente = {"Flores", "Chocolate", "Livro", "Cafe", "Pizza", "Videogame", "Joia", "Musica", "Planta", "Roupa", "Pelucia", "Perfume"};
         vector<int> preco = {-30, -20, -72, -20, -80, -120, -280, -12, -6, -100, -26, -200};
     public:
         void getItens(){
             for (int i = 0; i < 12; i++){
-                cout << i << ". " << presente[i] << " - " << preco[i] << "R$" << endl;
+                cout << "[" << i << "] " << presente[i] << " - " << preco[i] << "R$" << endl;
             }
         }
 
@@ -29,14 +45,15 @@ class Presentes{
         }
 };
 
+// Classe base que representa qualquer pessoa do jogo(NPC ou Jogador)
 class Pessoas{
     protected:
         string nome;
         int idade;
-        string presente;
+        string presente; //Presente favorito da pessoa
         vector<string> inventario;
     public:
-        Presentes p;
+        Presentes p; //Composição: cada pessoa tem acesso ao catálogo de presentes
         void setInfo(string nome, int idade, int index){
             this->nome = nome;
             this->idade = idade;
@@ -45,11 +62,10 @@ class Pessoas{
     
 };
 
-//========================== CLASSE NPC ===========================//
-
+//NPC: pretendente que pode evoluir relacionamento com o jogador
 class NPC : public Pessoas{
     private:
-        double coracao = 0;
+        double coracao = 0; // representa o nível de relacionamento do NPC com o jogador, varia de 0 a 100
         bool namorando = false;
         bool casado = false;
     public:
@@ -90,7 +106,7 @@ class NPC : public Pessoas{
         }
 
         void exibirInformacoes(int index){
-            cout << index << ". " << nome << " - " << idade << " Anos - " << "Nivel de Relacionamento: " << coracao << endl;
+            cout << "[" << index << "] " << nome << " - " << idade << " Anos - " << "Nivel de Relacionamento: " << coracao << endl;
         }
 };
 
@@ -122,26 +138,27 @@ class Jogador : public Pessoas{
             npc->setRelacionamento(true, false);
             sleep_seconds(1);
         }
-
+        //Regra: só pode se casar se já estiver namorando, e o nível de relacionamento tem que ser 100 ou mais
         void pedirCasamento(NPC* npc){
             if (npc->getCasado() == true){
                 cout << "\nVocê já está casado!!\n";
                 sleep_seconds(1);
                 return;
             }
-            if (npc->getCoracao() < 100){
-                cout << "\nVocês ainda não são chegados o suficiente!\n";
-                sleep_seconds(1);
-                return;
-            }
             if (npc->getNamorando() == false){
                 cout << "\nVocês ainda não estão namorando!\n";
+                sleep_seconds(1);
+                return; // faltava esse return!
+            }
+            if (npc->getCoracao() < 100){
+                cout << "\nVocês ainda não são chegados o suficiente!\n";
                 sleep_seconds(1);
                 return;
             }
             cout << "\nParabens!! Agora vocês estão casados!!\n";
             npc->setRelacionamento(true, true);
 
+            // Tela de fim de jogo
             sleep_seconds(1);
             system("cls");
             cout << "\033[33m";
@@ -150,7 +167,7 @@ class Jogador : public Pessoas{
             cout << "\nParabéns!! Você zerou o jogo!\n";
             cout << "O jogo fechará em 4 segundos...\n";
             sleep_seconds(4);
-            exit(0);
+            exit(0); // fecha o programa
         }
 
         void Presentear(NPC* npc, int itemIdx){
@@ -172,7 +189,7 @@ class Jogador : public Pessoas{
 
         void seeItems(){
             for(int i = 0; i < inventario.size(); i++){
-                cout << i << " - " << inventario[i];
+                cout << "[" << i << "] - " << inventario[i] << endl;
             }
         }
 
@@ -193,15 +210,48 @@ int main(){
     system("cls");
     system("chcp 65001 > nul");
 
-    cout << "\n---------------------- DATE SIMULATOR (Crie seu personagem) ----------------------\n";
-    cout << "Qual o seu nome: ";
+    cout << "\n ======================================================================\n";
+    cout << "                           DATE SIMULATOR!\n";
+    cout << "                         Crie seu personagem\n";
+    cout << " ======================================================================\n\n";
+    cout << "Nome: ";
     cin  >> nome;
-    cout << "\nQual sua idade: ";
-    cin >> idade;
-    cout << "\nPresentes: 0.Flores 1.Chocolate 2.Livro 3.Cafe 4.Pizza 5.Videogame 6.Joia 7.Musica 8.Planta 9.Roupa 10.Pelucia 11.Perfume";
-    cout << "\nQual o seu presente favorito: ";
-    cin >> presenteFav;
 
+
+    //-----------------------------------------------------------------------
+    // Validação de idade com try-catch + loop:
+    // continua pedindo a idade até que seja valida (entre 16 e 60 anos)
+    //-----------------------------------------------------------------------
+    while(true){
+        idade = lerInt("Idade: ");
+        try{
+            if(idade < 16 || idade > 60){
+                throw invalid_argument("Idade Invalida! O jogo so aceita idades entre 16 e 60 anos.");
+            }
+            break;
+        }catch(invalid_argument& e){
+            cout << "\n" << e.what() << "\n\n";
+        }
+    }
+    cout << "\n Presentes disponíveis:\n";
+    cout << "---------------------------------------------------------\n";
+    cout << " [0] FLores    [1] Chocolate   [2] Livro \n";
+    cout << " [3] Cafe      [4] Pizza       [5] Videogame \n";
+    cout << " [6] Joia      [7] Musica      [8] Planta \n";
+    cout << " [9] Roupa     [10] Pelucia   [11] Perfume \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "\nDigite o numero do seu presente favorito!!\n";
+    while(true){
+    presenteFav = lerInt("\nEscolha: ");
+    try{
+        if(presenteFav < 0 || presenteFav > 11){
+            throw invalid_argument("Presente Invalido! Escolha um numero entre 0 e 11.");
+        }
+        break; // valor válido, sai do loop
+    }catch(const exception& e){ //const Exception& é para pegar qualquer tipo de exceção, não só invalid_argument
+        cout << "\n" << e.what() << "\n\n";
+    }
+}
     Jogador* player = new Jogador(nome, idade, presenteFav);
 
     vector<NPC*> npcs = {
@@ -223,20 +273,23 @@ int main(){
 
     do{
         system("cls");
-        cout << "\n---------------------- DATE SIMULATOR ----------------------\n";
-
-        cout << "1. Ir trabalhar" << endl;
-        cout << "2. Ir para a loja" << endl;
-        cout << "3. Flertar" << endl;
-        cout << "4. Pedir em namoro" << endl;
-        cout << "5. Pedir em casamento" << endl;
-        cout << "6. Verificar o inventário" << endl;
-        cout << "7. Exibir pretendentes" << endl;
-        cout << "9. Debug" << endl;
-        cout << "0. Sair" << endl;
-
-        cout << "O que voce deseja fazer? "; 
-        cin >> escolha;
+        cout << "\n ================================================\n";
+        cout << "              DATE SIMULATOR\n";
+        cout << " ================================================\n";
+        cout << "  Saldo: R$" << player->getMoney() << "\n";
+        cout << " ------------------------------------------------\n";
+        cout << "  [1] Ir Trabalhar\n";
+        cout << "  [2] Ir a Loja\n";
+        cout << "  [3] Flertar\n";
+        cout << "  [4] Pedir em namoro\n";
+        cout << "  [5] Pedir em casamento\n";
+        cout << "  [6] Exibir Inventario\n";
+        cout << "  [7] Ver pretendentes\n";
+        cout << "  [8] Debug\n";
+        cout << "  [0] Sair\n";
+        cout << " ------------------------------------------------\n";
+      
+        escolha = lerInt(" Escolha: ");
         cout << endl;
 
         switch (escolha) {
@@ -246,37 +299,41 @@ int main(){
                     system("cls");
                     double oldMoney = player->getMoney();
                     cout << "\033[32m";
-                    cout << "\n---------------------- TRABALHAR ----------------------\n";
+                    cout << "\n=========================================\n";
+                    cout << "               TRABALHAR\n";
+                    cout << "=========================================\n";
                     cout << "\033[0m";
-                    cout << "1. Vender bolo de pote\n";
-                    cout << "2. Cultivar plantas\n";
-                    cout << "3. Trabalhar em um escritório\n";
-                    cout << "0. Voltar pra casa\n";
-                    cin >> i;
+                    cout << "-----------------------------------------\n";
+                    cout << "[1] Vender bolo de pote\n";
+                    cout << "[2] Cultivar plantas\n";
+                    cout << "[3] Trabalhar em um escritório\n";
+                    cout << "[0] Voltar pra casa\n";
+                    cout << "-----------------------------------------\n";
+                    i = lerInt("O que deseja fazer? n-> ");
                     switch (i)
                     {
                     case 1:
                         player->setMoney(+50);
-                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: " << player->getMoney() << endl;
-                        sleep_seconds(0.1);
+                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: R$" << player->getMoney() << endl;
+                        sleep_seconds(1);
                         break;
                     case 2:
                         player->setMoney(+20);
-                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: " << player->getMoney() << endl;
-                        sleep_seconds(0.1);
+                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: R$" << player->getMoney() << endl;
+                        sleep_seconds(1); 
                         break;
                     case 3:
                         player->setMoney(+150);
-                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: " << player->getMoney() << endl;
-                        sleep_seconds(0.1);
+                        cout << "Saldo anterior: " << oldMoney << " - Saldo atual: R$" << player->getMoney() << endl;
+                        sleep_seconds(1);
                         break;
                     case 0:
                         cout << "\nVoltando!\n";
-                        sleep_seconds(0.1);
+                        sleep_seconds(0.5);
                         break;
                     default:
                         cout << "\nNão encontrado!\n";
-                        sleep_seconds(0.1);
+                        sleep_seconds(0.3);
                         break;
                     }
                 }while (i != 0);
@@ -287,9 +344,15 @@ int main(){
                 do{
                     system("cls");
                     Presentes loja;
+                    cout << "\n=========================================\n";
+                    cout << "               LOJA\n";
+                    cout << "=========================================\n";
+                    cout << "Saldo Atual: R$" << player->getMoney() << endl;
+                    cout << "------------------------------------\n";
                     loja.getItens();
-                    cout << "99. Sair da loja\nEscolha: ";
-                    cin >> v;
+                    cout << "[99] Sair da loja\n";
+                    cout << "------------------------------------\n";
+                    v = lerInt("O que deseja comprar? n-> ");
                     if (v != 99){
                         try {
                             if (v < 0 || v > 11)
@@ -311,20 +374,27 @@ int main(){
                     system("cls");
                     cout << "\033[31m";
                     int flerte;
-                    cout << "\n---------------------- FLERTAR ----------------------\n";
+                    cout << "\n================================================\n";
+                    cout << "                   FLERTAR\n";
+                    cout << "================================================\n";
                     cout << "\033[0m";
-                    cout << "Com quem você deseja flertar: ";
-                    cin >> flerte;
-
+                    cout <<"--------------------------------------------------\n";
+                    for (int i = 0; i < npcs.size(); i++){
+                        npcs[i]->exibirInformacoes(i);
+                    }
+                    cout <<"--------------------------------------------------\n";
+                    flerte = lerInt("Com quem deseja flertar? n-> ");
+                    cout << endl;
                     try {
                         if (flerte < 0 || flerte >= npcs.size()){
                             throw out_of_range("NPC não encontrado!");
                         }
 
-                        cout << "1. Contar piada\n";
-                        cout << "2. Presentear\n";
-                        cout << "0. Sair\n";
-                        cin >> tipoFlerte;
+                        cout << "[1] Contar piada\n";
+                        cout << "[2] Presentear\n";
+                        cout << "[0] Sair\n";
+                        cout << endl;
+                        tipoFlerte = lerInt("Escolha: ");
 
                         if (tipoFlerte == 1){
                             npcs[flerte]->flertar("Contar Piada", 12);
@@ -333,12 +403,18 @@ int main(){
                         } else if (tipoFlerte == 2){
                             system("cls");
                             int giveGift = 0;
+                            cout << "\n=================================\n";
+                            cout << "        Items para presentear\n";
+                            cout << "=================================\n";
+                            cout << "---------------------------------\n";
                             player->seeItems();
+                            cout << "---------------------------------\n";
                             cout << "\nEscolha que presente deseja dar: ";
-                            cin >> giveGift;
+                            giveGift = lerInt("n-> ");
                             player->Presentear(npcs[flerte], giveGift);
                             npcs[flerte]->exibirInformacoes(flerte);
-                            sleep_seconds(2);
+                            sleep_seconds(4);
+                            tipoFlerte = -1; // para voltar pro menu de flerte
                         } else {
                             continue;
                         }
@@ -354,48 +430,62 @@ int main(){
             case 4:
                 system("cls");
                 int indexNamoro;
+                cout << "\n  ================================================\n";
+                cout << "             PEDIR EM NAMORO\n";
+                cout << "  ================================================\n";
+                cout << "------------------------------------------------\n";
                 try{
-                    if (indexNamoro < 0 || indexNamoro > npcs.size()){
-                        throw out_of_range("NPC não encontrado!");
+                    for (int i = 0; i < npcs.size(); i++){
+                        npcs[i]->exibirInformacoes(i);
+                     }
+                cout << "------------------------------------------------\n";
+                     indexNamoro = lerInt("Com quem deseja namorar? n-> ");
+
+                    if (indexNamoro < 0 || indexNamoro >= npcs.size()){
+                    throw out_of_range("NPC não encontrado!");
                     }
-                for (int i = 0; i < npcs.size(); i++){
-                    npcs[i]->exibirInformacoes(i);
+                     player->pedirNamoro(npcs[indexNamoro]);
+                 }catch (out_of_range& e) {
+                      cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
+                    sleep_seconds(1.5);
                 }
-                cout << "Quem você deseja pedir em namoro?\n-> ";
-                cin >> indexNamoro;
-                player->pedirNamoro(npcs[indexNamoro]);
-            }catch (out_of_range& e) {
-                        cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
-                        sleep_seconds(1.5);
-                        tipoFlerte = -1;
-                    }
                 break;
             case 5:
                 system("cls");
-                int indexCasamento;
-                try{
-                    if(indexCasamento < 0 || indexCasamento > npcs.size()){
+                 int indexCasamento;
+                cout << "\n  ================================================\n";
+                cout << "             PEDIR EM CASAMENTO\n";
+                cout << "  ================================================\n";
+                cout << "------------------------------------------------\n";
+                 try{
+                     for (int i = 0; i < npcs.size(); i++){
+                         npcs[i]->exibirInformacoes(i);
+                    }
+                    cout << "------------------------------------------------\n";
+                    indexCasamento = lerInt("Com quem deseja casar? n-> ");
+
+                    if(indexCasamento < 0 || indexCasamento >= npcs.size()){
                         throw out_of_range("NPC não encontrado!");
                     }
-                    for (int i = 0; i < npcs.size(); i++){
-                        npcs[i]->exibirInformacoes(i);
-                    }
-                    cout << "Quem você deseja pedir em casamento?\n-> ";
-                    cin >> indexCasamento;
                     player->pedirCasamento(npcs[indexCasamento]);
-                }catch (out_of_range& e) {
-                        cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
-                        sleep_seconds(1.5);
-                        tipoFlerte = -1;
-                    }
+                 }catch (out_of_range& e) {
+                     cout << "\n\033[31mErro: " << e.what() << "\033[0m\n";
+                    sleep_seconds(2);
+                }
                 break;
             case 6:
                 int s;
                 do{
                     system("cls");
-                    cout << "\n---------------------- INVENTARIO ----------------------\n";
+                    cout << "\n=========================================\n";
+                    cout << "               INVENTÁRIO\n";
+                    cout << "=========================================\n";
+                    cout << "-------------------------------------------\n";
                     player->seeItems();
-                    cout << "\n0. Sair\n->";
+                    cout << endl;
+                    cout <<"\nDigite [0] Para voltar!\n";
+                    cout << "-----------------------------------------\n\n";
+                    cout << "Digite aqui: ";
                     cin >> s;
                 } while (s != 0);
                 break;
@@ -403,39 +493,56 @@ int main(){
                 int u;
                 do{
                     system("cls");
-                    cout << "\n---------------------- SOLTEIROS ----------------------\n";
+                    cout << "\n=========================================\n";
+                    cout << "               SOLTEIROS\n";
+                    cout << "=========================================\n";
+                    cout << "------------------------------------------------\n";
                     for (int i = 0; i < npcs.size(); i++){
                         npcs[i]->exibirInformacoes(i);
                     }
-                    cout << "0 Para sair!\n->";
+                    cout << endl;
+                    cout << "Digite [0] Para voltar!\n";
+                    cout << "------------------------------------------------\n";
+                    cout << endl;
+                    cout <<"Digite aqui: ";
                     cin >> u;
                     cout << endl;
                 }while (u != 0);
                 break;
-            case 9:
+            case 8:
                 int debug;
                 do{
                     system("cls");
-                    cout << "\n---------------------- DEBUG MENU ----------------------\n";
-                    cout << "1. Adicionar NPC\n2. Deletar NPC\n3. Adicionar Dinheiro\n0. Sair\n->";
-                    cin >> debug;
+                    cout << "\n=========================================\n";
+                    cout << "               DEBUG MENU\n";
+                    cout << "=========================================\n";
+                    cout << "------------------------------------------\n";
+                    cout << "[1] Adicionar NPC\n[2] Deletar NPC\n[3] Adicionar Dinheiro\n[0] Sair" << endl;
+                    cout << "------------------------------------------\n";
+                    debug = lerInt("Escolha: ");
                     switch(debug){
                         case 1:{
                             string nomeNPC; 
                             int idadeNPC, presenteNPC;
 
                             system("cls");
-                            cout << "\n---------------------- CRIAR NPC ----------------------\n";
+                            cout << "\n=========================================\n";
+                            cout << "               CRIAR NPC\n";
+                            cout << "=========================================\n";
 
                             cout << "Nome do novo pretendente: ";
                             cin >> nomeNPC;
 
-                            cout << "Idade: ";
-                            cin >> idadeNPC;
+                            idadeNPC = lerInt("Idade do novo pretendente: ");
 
-                            cout << "\nPresentes: 0.Flores 1.Chocolate 2.Livro 3.Cafe 4.Pizza 5.Videogame 6.Joia 7.Musica 8.Planta 9.Roupa 10.Pelucia 11.Perfume";
-                            cout << "\nQual o seu presente favorito: ";
-                            cin >> presenteNPC;
+                            cout << "\nPresentes disponíveis:\n";
+                            cout << "---------------------------------------------------------\n";
+                            cout << " [0] FLores    [1] Chocolate   [2] Livro \n";
+                            cout << " [3] Cafe      [4] Pizza       [5] Videogame \n";
+                            cout << " [6] Joia      [7] Musica      [8] Planta \n";
+                            cout << " [9] Roupa     [10] Pelucia   [11] Perfume \n";
+                            cout << "---------------------------------------------------------\n";
+                            presenteNPC = lerInt("Presente favorito do NPC: ");
 
                             NPC* novoNPC = new NPC(nomeNPC, idadeNPC, presenteNPC);
                             npcs.push_back(novoNPC);
@@ -447,13 +554,14 @@ int main(){
                         case 2:{
                             system("cls");
                             int total = -1;
+                            cout << "----------------------------------------------------\n";
                             for (int i = 0; i < npcs.size(); i++){
                                 npcs[i]->exibirInformacoes(i);
                                 total++;
                             }
-                            int excluir;
-                            cout << "\nDe 0 - " << total << " selecione quem você quer excluir\n-> ";
-                            cin >> excluir;
+                            cout << "---------------------------------------------------\n";
+
+                            int excluir = lerInt("\nDe 0 a " + to_string(total) + ", qual NPC deseja excluir? n-> ");
 
                             if (excluir >= 0 && excluir < npcs.size()){
                                 cout << "\nNPC " << npcs[excluir]->getName() << " excluido!\n";
@@ -466,13 +574,13 @@ int main(){
                             sleep_seconds(1.5);
                             break;
                         }
-                        case 3:
-                            double money;
+                        case 3:{
                             system("cls");
-                            cout << "\nQuanto de dinheiro deseja adicionar\n-> ";
-                            cin >> money;
+                            int money = lerInt("Quanto dinheiro deseja adicionar? n-> ");
                             player->setMoney(money);
+                            cout << " Saldo atual: R$" << player->getMoney() << endl;
                             break;
+                        };
                         default:
                             cout << "\nERRO\n";
                             break;
